@@ -1,0 +1,253 @@
+/* ---------- PrepZ — shared site styles ---------- */
+
+:root {
+  --ink: #14181f;
+  --paper: #fafaf8;
+  --card: #ffffff;
+  --line: #e6e4de;
+  --muted: #6b7178;
+
+  --physics: #2f6fed;   /* blue  */
+  --chem:    #1f9e6d;   /* green */
+  --bio:     #0d9488;   /* teal  */
+  --accent:  #14181f;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---------- header ---------- */
+
+header.site {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.logo .dot-p { color: var(--physics); }
+.logo .dot-c { color: var(--chem); }
+.logo .dot-b { color: var(--bio); }
+
+.logo small {
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+nav.links {
+  display: flex;
+  gap: 26px;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+nav.links a {
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+nav.links a:hover,
+nav.links a.active {
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  nav.links { display: none; }
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  padding: 72px 0 48px;
+}
+
+.hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 18px;
+}
+
+.hero .eyebrow .chip {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  background: var(--bio);
+}
+
+h1 {
+  font-size: clamp(2rem, 4.5vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+  font-weight: 800;
+}
+
+.hero p.lede {
+  font-size: 1.15rem;
+  color: var(--muted);
+  max-width: 60ch;
+  margin: 0 0 30px;
+}
+
+.subject-rule {
+  display: flex;
+  height: 4px;
+  width: 220px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 34px;
+}
+.subject-rule span { flex: 1; }
+.subject-rule .p { background: var(--physics); }
+.subject-rule .c { background: var(--chem); }
+.subject-rule .b { background: var(--bio); }
+
+/* ---------- cards / sections ---------- */
+
+.section { padding: 40px 0; }
+.section + .section { border-top: 1px solid var(--line); }
+
+h2 {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  margin: 0 0 14px;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 24px 0 8px;
+}
+
+p { margin: 0 0 14px; color: #2a2f37; }
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .grid3 { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+}
+
+.card .tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 5px;
+  margin-bottom: 12px;
+  color: #fff;
+}
+.card.physics .tag { background: var(--physics); }
+.card.chem .tag { background: var(--chem); }
+.card.bio .tag { background: var(--bio); }
+
+.card h3 { margin-top: 0; }
+.card p { color: var(--muted); font-size: 0.94rem; margin-bottom: 0; }
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ink);
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: opacity 0.15s ease;
+}
+.btn:hover { opacity: 0.85; }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+/* ---------- legal pages ---------- */
+
+.legal h1 { font-size: 2rem; margin-bottom: 6px; }
+.legal .updated { color: var(--muted); font-size: 0.88rem; margin-bottom: 34px; }
+.legal ul { padding-left: 20px; color: #2a2f37; }
+.legal li { margin-bottom: 8px; }
+
+/* ---------- footer ---------- */
+
+footer.site {
+  border-top: 1px solid var(--line);
+  margin-top: 60px;
+  padding: 34px 0 48px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+footer.site .foot-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+footer.site a { text-decoration: none; color: var(--muted); }
+footer.site a:hover { color: var(--ink); }
