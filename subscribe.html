@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscribe — PrepZ</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <span><span class="dot-p">Prep</span><span class="dot-b">Z</span></span>
+      <small>NEET Prep</small>
+    </a>
+    <nav class="links">
+      <a href="index.html">Home</a>
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="refund-policy.html">Refund Policy</a>
+      <a href="terms-and-conditions.html">Terms</a>
+      <a href="contact.html">Contact</a>
+      <a href="subscribe.html" style="color:var(--ink); font-weight:700;">Subscribe</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:56px; padding-bottom:70px; max-width:560px;">
+  <h1 style="margin-bottom:8px;">Subscribe to PrepZ</h1>
+  <p style="color:var(--muted); margin-bottom:28px;">Use the same email you signed up with in the app.</p>
+
+  <!-- STEP 1: Find account -->
+  <div id="step-email" class="card">
+    <label style="display:block; font-weight:600; font-size:0.9rem; margin-bottom:6px;">Your PrepZ account email</label>
+    <input id="email" type="email" placeholder="you@example.com"
+      style="width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:8px; font-size:1rem; margin-bottom:14px;">
+    <button id="find-btn" class="btn" style="width:100%; justify-content:center;">Find my account</button>
+    <p id="find-status" style="margin-top:12px; font-size:0.9rem; color:#c0392b;"></p>
+  </div>
+
+  <!-- STEP 2: Confirm identity + choose plan (hidden until account found) -->
+  <div id="step-plan" class="card" style="display:none; margin-top:20px;">
+    <p id="welcome-msg" style="font-weight:600; margin-bottom:4px;"></p>
+    <p id="current-sub-msg" style="color:var(--muted); font-size:0.88rem; margin-bottom:18px;"></p>
+
+    <label style="display:block; font-weight:600; font-size:0.9rem; margin-bottom:10px;">Choose a plan</label>
+    <div id="plans" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+      <!-- Real plan IDs from Supabase `plans` table -->
+      <label class="plan-option">
+        <input type="radio" name="plan" value="71798af6-c1c2-4b2d-bc23-a59883c10b1a" data-name="1 Month">
+        <span>1 Month — ₹81</span>
+      </label>
+      <label class="plan-option">
+        <input type="radio" name="plan" value="19111bec-3ebf-4383-afa6-a917ca1e45b1" data-name="6 Months">
+        <span>6 Months — ₹711</span>
+      </label>
+      <label class="plan-option">
+        <input type="radio" name="plan" value="15fba4e8-0b45-45e2-9a76-c73fdd0dd581" data-name="12 Months">
+        <span>12 Months — ₹1080</span>
+      </label>
+      <label class="plan-option">
+        <input type="radio" name="plan" value="5b7894ce-5b18-45b8-b9ab-74a8faea91fd" data-name="24 Months">
+        <span>24 Months — ₹1980</span>
+      </label>
+    </div>
+
+    <button id="pay-btn" class="btn" style="width:100%; justify-content:center; padding:14px;">
+      Continue to payment
+    </button>
+    <button id="change-email-btn" class="btn ghost" style="width:100%; justify-content:center; margin-top:8px;">
+      Not you? Use a different email
+    </button>
+  </div>
+
+  <p id="status-msg" style="margin-top:16px; font-size:0.92rem;"></p>
+
+  <p style="margin-top:36px; color:var(--muted); font-size:0.85rem;">
+    Payments are processed securely by Razorpay. See our
+    <a href="refund-policy.html">Refund Policy</a> for cancellation details.
+  </p>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-links">
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="refund-policy.html">Refund Policy</a>
+      <a href="terms-and-conditions.html">Terms &amp; Conditions</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div>© 2026 PrepZ. All rights reserved.</div>
+  </div>
+</footer>
+
+<style>
+  .plan-option {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; cursor: pointer; font-size: 0.95rem;
+  }
+  .plan-option:has(input:checked) { border-color: var(--ink); background: #f5f4f0; }
+</style>
+
+<script>
+  // ---- PrepZ Neet Supabase config ----
+  const SUPABASE_FUNCTIONS_URL = "https://tfulgjlyfxjyiyhjovoy.supabase.co/functions/v1";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_6LogOpnEWy5nQUX9J2tsRw_EZhVxV2i";
+  // Note: this is the newer "publishable" key format. It must be sent in
+  // an "apikey" header, NOT an "Authorization: Bearer" header — that's
+  // handled correctly in the fetch calls below already.
+  // -------------------------------------------------
+
+  let studentData = null; // holds {user_id, name, email, current_subscription} after lookup
+
+  const findBtn = document.getElementById("find-btn");
+  const findStatus = document.getElementById("find-status");
+  const stepEmail = document.getElementById("step-email");
+  const stepPlan = document.getElementById("step-plan");
+  const welcomeMsg = document.getElementById("welcome-msg");
+  const currentSubMsg = document.getElementById("current-sub-msg");
+  const payBtn = document.getElementById("pay-btn");
+  const statusMsg = document.getElementById("status-msg");
+  const changeEmailBtn = document.getElementById("change-email-btn");
+
+  findBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    if (!email) {
+      findStatus.textContent = "Please enter your email.";
+      return;
+    }
+    findBtn.disabled = true;
+    findStatus.style.color = "var(--muted)";
+    findStatus.textContent = "Looking up your account...";
+
+    try {
+      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/lookup-student`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.found) {
+        findStatus.style.color = "#c0392b";
+        findStatus.textContent = data.error || "Account not found.";
+        findBtn.disabled = false;
+        return;
+      }
+
+      studentData = data;
+      welcomeMsg.textContent = `Subscribing as: ${data.name} (${data.email})`;
+
+      if (data.current_subscription && data.current_subscription.is_active) {
+        const expiry = new Date(data.current_subscription.expires_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+        currentSubMsg.textContent = `You currently have an active ${data.current_subscription.plan_name} plan until ${expiry}. Paying now will extend your access.`;
+      } else {
+        currentSubMsg.textContent = "";
+      }
+
+      stepEmail.style.display = "none";
+      stepPlan.style.display = "block";
+      findBtn.disabled = false;
+    } catch (err) {
+      console.error(err);
+      findStatus.style.color = "#c0392b";
+      findStatus.textContent = "Something went wrong. Please try again.";
+      findBtn.disabled = false;
+    }
+  });
+
+  changeEmailBtn.addEventListener("click", () => {
+    studentData = null;
+    stepPlan.style.display = "none";
+    stepEmail.style.display = "block";
+    findStatus.textContent = "";
+    statusMsg.textContent = "";
+  });
+
+  payBtn.addEventListener("click", async () => {
+    const selectedPlan = document.querySelector('input[name="plan"]:checked');
+    if (!studentData) {
+      statusMsg.textContent = "Please find your account first.";
+      return;
+    }
+    if (!selectedPlan) {
+      statusMsg.textContent = "Please choose a plan.";
+      return;
+    }
+
+    payBtn.disabled = true;
+    statusMsg.textContent = "Setting up payment...";
+
+    try {
+      const orderRes = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-razorpay-order`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ email: studentData.email, plan_id: selectedPlan.value }),
+      });
+      const order = await orderRes.json();
+
+      if (!orderRes.ok) {
+        statusMsg.textContent = order.error || "Something went wrong. Please try again.";
+        payBtn.disabled = false;
+        return;
+      }
+
+      const options = {
+        key: order.razorpay_key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "PrepZ",
+        description: `${order.plan_name} subscription`,
+        order_id: order.order_id,
+        prefill: { email: studentData.email, name: studentData.name },
+        theme: { color: "#14181f" },
+        handler: async function (response) {
+          statusMsg.textContent = "Verifying payment...";
+          const verifyRes = await fetch(`${SUPABASE_FUNCTIONS_URL}/verify-razorpay-payment`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              user_id: order.user_id,
+              plan_id: selectedPlan.value,
+            }),
+          });
+          const verify = await verifyRes.json();
+
+          if (verifyRes.ok && verify.success) {
+            statusMsg.style.color = "#1f9e6d";
+            statusMsg.textContent = "Payment successful! Open the PrepZ app to see your plan unlock (may take a few seconds).";
+          } else {
+            statusMsg.style.color = "#c0392b";
+            statusMsg.textContent = verify.error || "We received your payment but couldn't confirm it automatically. Contact support with your payment ID: " + response.razorpay_payment_id;
+          }
+          payBtn.disabled = false;
+        },
+        modal: {
+          ondismiss: function () {
+            statusMsg.textContent = "Payment cancelled.";
+            payBtn.disabled = false;
+          },
+        },
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      statusMsg.textContent = "Something went wrong. Please try again.";
+      payBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
